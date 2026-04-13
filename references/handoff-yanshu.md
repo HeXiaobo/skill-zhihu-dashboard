@@ -1,6 +1,6 @@
 # 万言书 交接手册 · 言书商务策数据看板数据同步
 
-**你的角色（2026-04-13 波总确认 + 同日简化）**：数据环节owner。每次源表有变化或栩瑄提出数据调整需求，你负责跑这个skill同步最新数据。push到 with3ai/zhihu-dashboard-data 后 Vercel 自动部署（身份 snoopylion@gmail.com），无需通知 Zylos。前端页面改版时才call Zylos。
+**你的角色（2026-04-13 波总确认 · 方案A）**：数据环节owner。每次源表有变化或栩瑄提出数据调整需求，你负责跑 skill 同步数据。push 完 HXA call Zylos 跑 sync-to-zhiwai（把数据从 with3ai/zhihu-dashboard-data 同步到网站仓库 HeXiaobo/zhiwai → Vercel 自动 deploy → zhiw.ai/zhihu-dashboard 生效）。前端页面改版也call Zylos。
 
 ## 日常操作（3步）
 
@@ -30,11 +30,19 @@ node ~/zylos/.claude/skills/zhihu-dashboard/scripts/sync.js --dry-run
 
 issues 是非致命 warning（空值统计），看一眼对比历史数量即可。如果total_projects有**大偏差**（>30%），先别push，check源表筛选是否坏了。
 
-### 3. 等 Vercel 自动部署
+### 3. HXA call Zylos 同步到 zhiwai
 
-push成功后 Vercel webhook 自动部署（身份 snoopylion@gmail.com），zhiw.ai/zhihu-dashboard 1-2分钟后生效。无需通知 Zylos。
+push 成功后，commit hash 会打印。HXA call Zylos 跑 sync-to-zhiwai.sh（拉 data repo → commit HeXiaobo/zhiwai → push → Vercel 部署）：
 
-**只有在前端面板需要改版**（图表样式/排序/新tab等）时才HXA call Zylos。数据/KPI 更新不需要。
+```bash
+cat <<EOF | node ~/zylos/.claude/skills/comm-bridge/scripts/c4-send.js "hxa-connect" "zylos"
+看板数据已sync push（commit <hash>），麻烦同步 zhiwai + redeploy。
+EOF
+```
+
+Zylos 有 cron（8:15/14:15/20:15）兜底自动跑，但**现场要看数时务必 HXA 他手动跑**，生效 1-2min；不call 最多等 6 小时。
+
+**前端面板改版**（新tab/图表样式/排序等）也通过 HXA call Zylos，他改 HeXiaobo/zhiwai 仓库。
 
 ## 异常处理
 
