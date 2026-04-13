@@ -20,13 +20,9 @@ node ~/zylos/.claude/skills/zhihu-dashboard/scripts/sync.js
 
 自动完成：抓取 → 聚合 → 写盘 → git commit + push → 打印数据质量报告。
 
-Push成功后需**通知Zylos**（HXA call）触发前端Vercel redeploy：
+Push 到 with3ai/zhihu-dashboard-data 后 **Vercel 自动部署**（身份 snoopylion@gmail.com），1-2分钟后 zhiw.ai/zhihu-dashboard 生效。无需通知 Zylos。
 
-```bash
-cat <<EOF | node ~/zylos/.claude/skills/comm-bridge/scripts/c4-send.js "hxa-connect" "zylos"
-看板数据已sync push（commit <hash>），麻烦前端联调 / 触发redeploy。
-EOF
-```
+**例外**：前端面板改版（新tab/图表样式/排序等）才HXA call Zylos。日常数据/KPI 更新不需要。
 
 ## Dry-run（不写盘 不推送）
 
@@ -52,8 +48,7 @@ node ~/zylos/.claude/skills/zhihu-dashboard/scripts/sync.js --dry-run
 2. **转换** `buildProjectEvents/buildSettlementEvents/buildCommerceEvents/buildPlanningEvents`
 3. **聚合** `aggregate(projects, settlements, planning, commerce)` → latest.json
 4. **产出** main() 写 latest.json + events/*.json + _meta.json
-5. **同步** git add/commit/push
-6. **通知** 人工 HXA call Zylos
+5. **同步** git add/commit/push（Vercel webhook 自动部署）
 
 任一环节可独立替换而不影响其他（e.g. 换源表只改fetch；换schema只改build；换输出只改main末尾）。
 
